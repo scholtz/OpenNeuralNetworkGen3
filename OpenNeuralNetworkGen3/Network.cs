@@ -62,7 +62,7 @@ namespace OpenNeuralNetworkGen3
         }
 
 
-
+        public Network network { get { return this; } }
 
         public static Network Load(TextReader reader)
         {
@@ -116,7 +116,7 @@ namespace OpenNeuralNetworkGen3
 
         public double SumOfEasinessToLearn()
         {
-            return Neurons.Sum(n => n.Value.EasinessToLearn);
+            return Synapses.Sum(n => n.EasinessToLearn);
         }
 
         public void LoadNetwork(string filename)

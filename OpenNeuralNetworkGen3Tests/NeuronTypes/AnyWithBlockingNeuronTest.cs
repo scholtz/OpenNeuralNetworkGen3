@@ -18,7 +18,11 @@ namespace OpenNeuralNetworkGen3Tests
 
                 network.Layers[0].Neurons[0].State = random.NextDouble() / 10 * 4 * 0.70710678118654752440084436210485 * 2;
                 network.Layers[0].Neurons[1].State = random.NextDouble() / 10 * 6 * 0.70710678118654752440084436210485 * 2;
-                network.Layers[0].Neurons[2].State = random.NextDouble();
+                network.Layers[0].Neurons[2].State = random.NextDouble() / 10 * 3;
+                if(network.Layers[0].Neurons.Count > 3)
+                {
+                    network.Layers[0].Neurons[3].State = random.NextDouble();
+                }
             }
 
             public override ResultType Test(Network network)
@@ -32,7 +36,7 @@ namespace OpenNeuralNetworkGen3Tests
                 }
                 else
                 {
-                    if(network.Layers[0].Neurons[2].State > network.Synapses[2].EasinessOfActivation)
+                    if(network.Layers[0].Neurons[2].State > 0.2)//network.Layers[0].Neurons[2].State > network.Layers[0].Neurons[2].OutConnections[0].EasinessOfActivation)
                     {
                         return ResultType.OkNegative;
                     }
@@ -47,7 +51,7 @@ namespace OpenNeuralNetworkGen3Tests
                     }
                     else
                     {
-                        // false positive
+                        // false with negative result
                         return ResultType.FalseNegative;
                     }
                 }
@@ -90,10 +94,10 @@ namespace OpenNeuralNetworkGen3Tests
             var connection3 = inLayer.Neurons[2].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, true);
             connection3.EasinessOfActivation = 0.3;
 
-            network.Layers[0].Neurons[0].EasinessToLearn = 0;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0;
-            network.Layers[0].Neurons[2].EasinessToLearn = 0;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
+            connection3.EasinessToLearn = 0.5;
+
             int i = 0;
             while (network.SumOfEasinessToLearn() > 0.00001)
             {
@@ -131,6 +135,29 @@ namespace OpenNeuralNetworkGen3Tests
             Assert.AreEqual(TestCase.ResultType.OkNegative, result);
 
 
+            connection3.EasinessOfActivation = 0.01;
+
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
+            connection3.EasinessToLearn = 0.5;
+
+            i = 0;
+            while (network.SumOfEasinessToLearn() > 0.00001)
+            {
+                i++;
+                if (i > 100000) break;
+                network.StudyIteration(testcase, 1, 1);
+            }
+            Assert.IsTrue(connection3.EasinessOfActivation > 0.15);
+            for(i = 0; i < 10; i++)
+            {
+                network.ClearStates();
+                testcase.setRandomInitState(network);
+                network.Tick(0.1);
+                result = testcase.Test(network);
+                Assert.IsTrue(result == TestCase.ResultType.OkNegative || result == TestCase.ResultType.OkPositive, "Test iteration "+i +" failed");
+            }
+
         }
         /// <summary>
         /// This learning test must learn network to accept 0,2 from first neuron, 0,3 from second neuron, 0,2 from first blocking neuron, and skip 4th blocking neuron
@@ -164,13 +191,13 @@ namespace OpenNeuralNetworkGen3Tests
             var connection4 = inLayer.Neurons[3].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, true);
             connection4.EasinessOfActivation = 0.3;
 
-            network.Layers[0].Neurons[0].EasinessToLearn = 0;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0;
-            network.Layers[0].Neurons[2].EasinessToLearn = 0;
-            network.Layers[0].Neurons[3].EasinessToLearn = 0;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
+            connection3.EasinessToLearn = 0.5;
+            connection4.EasinessToLearn = 0.5;
+
             int i = 0;
-            while (network.SumOfEasinessToLearn() > 0.00001)
+            while (network.SumOfEasinessToLearn() > 0.0001)
             {
                 i++;
                 if (i > 100000) break;

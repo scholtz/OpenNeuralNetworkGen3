@@ -26,18 +26,20 @@ namespace OpenNeuralNetworkGen3
             FromNeuron.OutConnections.Add(this);
             ToNeuron.InConnections.Add(this);
         }
-        [XmlElement(ElementName = "Id")]
         public Guid ID { get; set; } = Guid.NewGuid();
-        [XmlElement(ElementName = "FromNeuron")]
         public Neuron FromNeuron;
-        [XmlElement(ElementName = "ToNeuron")]
         public Neuron ToNeuron;
-        [XmlElement(ElementName = "EasinessOfActivation")]
         public double EasinessOfActivation;
+        /// <summary>
+        /// Easiness To Learn new things
+        /// 
+        /// Higher number means that learnign will have higher impact.
+        /// Lower number means that it will be more difficult to learn something new this neuron.
+        /// </summary>
+        public double EasinessToLearn { get; set; } = 0.5; // <0 - 1>
         /// <summary>
         /// When incomming neuron is active, when is blocking is true, do not activate other neuron
         /// </summary>
-        [XmlElement(ElementName = "IsBlocking")]
         public bool IsBlocking = false;
 
         public override bool Equals(object obj)

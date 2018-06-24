@@ -32,13 +32,6 @@ namespace OpenNeuralNetworkGen3
         #region Properties
         public Guid ID { get; set; } = Guid.NewGuid();
         public double Frequency { get; set; } = 0;
-        /// <summary>
-        /// Easiness To Learn new things
-        /// 
-        /// Higher number means that learnign will have higher impact.
-        /// Lower number means that it will be more difficult to learn something new this neuron.
-        /// </summary>
-        public double EasinessToLearn { get; set; } = 0.5; // <0 - 1>
 
         public Layer Layer { get; set; }
         [XmlIgnore]
@@ -97,8 +90,10 @@ namespace OpenNeuralNetworkGen3
         /// </summary>
         public void SupportOkNegative(double v)
         {
-
-            EasinessToLearn = Math.Max(0.00001, EasinessToLearn / 1.001);
+            foreach (var synapse in InConnections)
+            {
+                synapse.EasinessToLearn = Math.Max(0.00001, synapse.EasinessToLearn / 1.001);
+            }
         }
 
         public void Support(double v)
@@ -131,20 +126,27 @@ namespace OpenNeuralNetworkGen3
 
                 }
             }
-            EasinessToLearn = Math.Max(0.00001, EasinessToLearn / 1.001);
-
+            foreach (var synapse in InConnections)
+            {
+                synapse.EasinessToLearn = Math.Max(0.00001, synapse.EasinessToLearn / 1.001);
+            }
         }
 
         public void NegateFalseNegative(double v)
         {
-            /*
+            
             bool blockingFound = false;
             foreach (var synapse in InConnections.Where(s => s.IsBlocking))
             {
                 var signalFromIsActive = synapse.FromNeuron.State > synapse.EasinessOfActivation;
-                blockingFound = true;
-                //if (!signalFromIsActive) v = v / 2;
-                synapse.Negate(EasinessToLearn * v / 1000);
+                if (signalFromIsActive)
+                {
+                    blockingFound = true;
+                    synapse.Negate(synapse.EasinessToLearn * v / 1000);
+                    synapse.EasinessToLearn = Math.Min(1, synapse.EasinessToLearn * 1.01);
+                }
+                //if (!signalFromIsActive) 
+
             }
             if (blockingFound) return;
             /**/
@@ -153,16 +155,16 @@ namespace OpenNeuralNetworkGen3
                 var signalFromIsActive = synapse.FromNeuron.State > synapse.EasinessOfActivation;
                 if (signalFromIsActive)
                 {
-                    synapse.Support(EasinessToLearn * v  / 1000);
+                    synapse.Support(synapse.EasinessToLearn * v  / 1000);
                 }
                 else
                 if (!signalFromIsActive)
                 {
-                    synapse.Support(EasinessToLearn * v * 2 / 1000);
+                    synapse.Support(synapse.EasinessToLearn * v * 2 / 1000);
                 }
 
+                synapse.EasinessToLearn = Math.Min(1, synapse.EasinessToLearn * 1.01);
             }
-            EasinessToLearn = Math.Min(1, EasinessToLearn * 1.01);
         }
         public void NegateFalsePositive(double v)
         {
@@ -171,7 +173,8 @@ namespace OpenNeuralNetworkGen3
             {
                 var signalFromIsActive = synapse.FromNeuron.State > synapse.EasinessOfActivation;
                 if (!signalFromIsActive) v = v / 2;
-                synapse.Support(EasinessToLearn * v / 1000);
+                synapse.Support(synapse.EasinessToLearn * v / 1000);
+                synapse.EasinessToLearn = Math.Min(1, synapse.EasinessToLearn * 1.01);
             }
             foreach (var synapse in InConnections.Where(s => !s.IsBlocking))
             {
@@ -180,17 +183,17 @@ namespace OpenNeuralNetworkGen3
 
                 if (signalFromIsActive)
                 {
-                    synapse.Negate(EasinessToLearn * v / 1000);
+                    synapse.Negate(synapse.EasinessToLearn * v / 1000);
                 }
                 else
                 if (!signalFromIsActive)
                 {
-                    synapse.Support(EasinessToLearn * v / 1000);
+                    synapse.Support(synapse.EasinessToLearn * v / 1000);
                 }
 
+                synapse.EasinessToLearn = Math.Min(1, synapse.EasinessToLearn * 1.01);
             }
 
-            EasinessToLearn = Math.Min(1, EasinessToLearn * 1.01);
         }
 
         public abstract void Tick(double v, Network stepBackNetwork);

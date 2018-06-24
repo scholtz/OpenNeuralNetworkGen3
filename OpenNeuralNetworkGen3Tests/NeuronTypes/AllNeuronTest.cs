@@ -59,29 +59,29 @@ namespace OpenNeuralNetworkGen3Tests
             var outLayer = network.NewLayer();
             outLayer.Add(1, typeof(AllNeuron));
 
-            var syn = inLayer.Neurons[0].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, false);
+            var connection = inLayer.Neurons[0].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, false);
 
             inLayer.Neurons[0].State = 1;
             outLayer.Neurons[0].State = 1;
-            Assert.AreEqual(Neuron.VEGETATIVE_STATE, syn.EasinessOfActivation);
-            outLayer.Neurons[0].EasinessToLearn = 0.5;
+            Assert.AreEqual(Neuron.VEGETATIVE_STATE, connection.EasinessOfActivation);
+            connection.EasinessToLearn = 0.5;
             network.Support(0.1);
             // when we receive positive signal, we do not change EasinessOfActivation
-            Assert.AreEqual(Neuron.VEGETATIVE_STATE, syn.EasinessOfActivation);
+            Assert.AreEqual(Neuron.VEGETATIVE_STATE, connection.EasinessOfActivation);
             // when we receive positive signal, we will reduce easiness to learn
-            Assert.IsTrue(outLayer.Neurons[0].EasinessToLearn < 0.5);
+            Assert.IsTrue(connection.EasinessToLearn < 0.5);
 
             network.ClearStates();
 
-            syn.EasinessOfActivation = Neuron.VEGETATIVE_STATE;
+            connection.EasinessOfActivation = Neuron.VEGETATIVE_STATE;
             inLayer.Neurons[0].State = 1;
             outLayer.Neurons[0].State = 0;
-            outLayer.Neurons[0].EasinessToLearn = 0.5;
+            connection.EasinessToLearn = 0.5;
             network.Support(0.1);
             // we do not modify EasinessOfActivation when we receive positive signal
             // however we lower chance for this neuron to learn something new
-            Assert.AreEqual(Neuron.VEGETATIVE_STATE, syn.EasinessOfActivation);
-            Assert.IsTrue(outLayer.Neurons[0].EasinessToLearn < 0.5);
+            Assert.AreEqual(Neuron.VEGETATIVE_STATE, connection.EasinessOfActivation);
+            Assert.IsTrue(connection.EasinessToLearn < 0.5);
 
 
         }
@@ -96,31 +96,31 @@ namespace OpenNeuralNetworkGen3Tests
             var outLayer = network.NewLayer();
             outLayer.Add(1, typeof(AllNeuron));
 
-            var syn = inLayer.Neurons[0].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, false);
+            var connection = inLayer.Neurons[0].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, false);
 
             //inLayer.Neurons[0].State = 1;
 
             inLayer.Neurons[0].State = 1;
             outLayer.Neurons[0].State = 1;
-            Assert.AreEqual(Neuron.VEGETATIVE_STATE, syn.EasinessOfActivation);
-            outLayer.Neurons[0].EasinessToLearn = 0.5;
+            Assert.AreEqual(Neuron.VEGETATIVE_STATE, connection.EasinessOfActivation);
+            connection.EasinessToLearn = 0.5;
             network.NegateFalsePositive(0.1);
             // when we receive positive signal, we will reduce easiness of activation
-            Assert.IsTrue(syn.EasinessOfActivation > Neuron.VEGETATIVE_STATE);
+            Assert.IsTrue(connection.EasinessOfActivation > Neuron.VEGETATIVE_STATE);
             // when we receive positive signal, we will reduce easiness to learn
-            Assert.IsTrue(outLayer.Neurons[0].EasinessToLearn > 0.5);
+            Assert.IsTrue(connection.EasinessToLearn > 0.5);
 
             network.ClearStates();
 
-            syn.EasinessOfActivation = Neuron.VEGETATIVE_STATE;
+            connection.EasinessOfActivation = Neuron.VEGETATIVE_STATE;
             inLayer.Neurons[0].State = 0;
             outLayer.Neurons[0].State = 1;
-            outLayer.Neurons[0].EasinessToLearn = 0.5;
+            connection.EasinessToLearn = 0.5;
             network.NegateFalsePositive(0.1);
             // when from is not active, and To neuron is active, and we do not like this result
-            Assert.IsTrue(syn.EasinessOfActivation < Neuron.VEGETATIVE_STATE);
+            Assert.IsTrue(connection.EasinessOfActivation < Neuron.VEGETATIVE_STATE);
             // however we lower chance for this neuron to learn something new
-            Assert.IsTrue(outLayer.Neurons[0].EasinessToLearn > 0.5);
+            Assert.IsTrue(connection.EasinessToLearn > 0.5);
 
 
         }
@@ -146,9 +146,8 @@ namespace OpenNeuralNetworkGen3Tests
             var connection2 = inLayer.Neurons[1].ConnectTo(outLayer.Neurons[0], Neuron.VEGETATIVE_STATE, false);
             connection2.EasinessOfActivation = 0.3;
 
-            network.Layers[0].Neurons[0].EasinessToLearn = 0.5;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0.5;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
 
 
             for (int i = 0; i < 1000; i++)
@@ -175,9 +174,8 @@ namespace OpenNeuralNetworkGen3Tests
             connection1.EasinessOfActivation = 0.1;
             connection2.EasinessOfActivation = 0.1;
 
-            network.Layers[0].Neurons[0].EasinessToLearn = 0.5;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0.5;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
 
             for (int i = 0; i < 1000; i++)
                 network.StudyIteration(testcase, 1, 1);
@@ -201,9 +199,8 @@ namespace OpenNeuralNetworkGen3Tests
 
             connection1.EasinessOfActivation = 0.4;
             connection2.EasinessOfActivation = 0.4;
-            network.Layers[0].Neurons[0].EasinessToLearn = 0.5;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0.5;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
 
             for (int i = 0; i < 1000; i++)
                 network.StudyIteration(testcase, 1, 1);
@@ -228,9 +225,8 @@ namespace OpenNeuralNetworkGen3Tests
 
             connection1.EasinessOfActivation = 0.4;
             connection2.EasinessOfActivation = 0.4;
-            network.Layers[0].Neurons[0].EasinessToLearn = 0.5;
-            network.Layers[0].Neurons[1].EasinessToLearn = 0.5;
-            network.Layers[1].Neurons[0].EasinessToLearn = 0.5;
+            connection1.EasinessToLearn = 0.5;
+            connection2.EasinessToLearn = 0.5;
 
             for (int i = 0; i < 100000; i++)
                 network.StudyIteration(testcase, 1, 1);
